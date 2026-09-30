@@ -17,3 +17,8 @@ spring:
 resend:
   api-key: ${RESEND_API_KEY}
   from: "PutForm <support@putform.online>"
+
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID}
+  key-secret: ${RAZORPAY_KEY_SECRET}

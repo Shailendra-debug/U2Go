@@ -1,5 +1,6 @@
 package com.skushwaha.u2go.DTO;
 
+import com.skushwaha.u2go.Entity.UrlPlan;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -20,6 +21,9 @@ public record CreateUrlRequest(
                 max = 50,
                 message = "Custom alias must be between 3 and 50 characters"
         )
-        String customAlias
+        String customAlias,
+
+        @NotBlank(message = "Plan is required")
+        UrlPlan urlPlan
 ) {
 }

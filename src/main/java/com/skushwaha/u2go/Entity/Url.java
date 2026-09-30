@@ -67,7 +67,6 @@ public class Url {
      */
     @Column(
             name = "custom_alias",
-            unique = true,
             length = 50
     )
     private String customAlias;

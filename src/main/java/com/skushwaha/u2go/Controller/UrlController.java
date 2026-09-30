@@ -1,5 +1,6 @@
 package com.skushwaha.u2go.Controller;
 
+import com.razorpay.RazorpayException;
 import com.skushwaha.u2go.DTO.CreateUrlRequest;
 import com.skushwaha.u2go.DTO.UrlResponse;
 import com.skushwaha.u2go.Service.UrlService;
@@ -24,15 +25,10 @@ public class UrlController {
      * POST /api/urls
      */
     @PostMapping
-        public ResponseEntity<UrlResponse> createUrl(
-            @Valid @RequestBody CreateUrlRequest request
-    ) {
-
-        UrlResponse response = urlService.createUrl(request);
-
+        public ResponseEntity<?> createUrl(@RequestBody CreateUrlRequest request) throws RazorpayException {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(response);
+                .body(urlService.createUrl(request));
     }
 
 

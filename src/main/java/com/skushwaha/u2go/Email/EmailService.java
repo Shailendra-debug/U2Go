@@ -3,6 +3,7 @@ package com.skushwaha.u2go.Email;
 import com.resend.Resend;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +18,7 @@ public class EmailService {
     /**
      * Sends the short URL to the user's email after shortening.
      */
+    @Async("emailTaskExecutor")
     public void sendShortUrlEmail(
             String email,
             String originalUrl,
