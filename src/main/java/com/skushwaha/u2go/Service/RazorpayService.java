@@ -31,7 +31,7 @@ public class RazorpayService {
      * Creates a Razorpay Order.
      * @return The Order ID to be sent to the frontend.
      */
-    public RazorpayOrderResponse RazorpayOrderResponse(UrlPlan plan, String userEmail) throws RazorpayException {
+    public RazorpayOrderResponse RazorpayOrderResponse(UrlPlan plan, String userEmail,UUID urlId) throws RazorpayException {
         RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
         Long amount = PlanPricing.getAmountInPaise(plan);
@@ -45,6 +45,7 @@ public class RazorpayService {
         JSONObject notes = new JSONObject();
         notes.put("email", userEmail);
         notes.put("plan", plan.name());
+        notes.put("urlId", urlId);
         notes.put("appId", AppId.U2GO);
         orderRequest.put("notes", notes);
         Order order = razorpayClient.orders.create(orderRequest);

@@ -3,6 +3,7 @@ package com.skushwaha.u2go.DTO;
 import com.skushwaha.u2go.Entity.UrlPlan;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateUrlRequest(
@@ -23,7 +24,7 @@ public record CreateUrlRequest(
         )
         String customAlias,
 
-        @NotBlank(message = "Plan is required")
+        @NotNull(message = "Plan is required")
         UrlPlan urlPlan
 ) {
 }

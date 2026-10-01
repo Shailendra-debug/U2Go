@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
@@ -19,15 +21,6 @@ public class PaymentController {
     private final RazorpayService razorpayService;
     private final UrlService urlService;
 
-    @PostMapping("/create-order")
-    public ResponseEntity<?> createOrder(@RequestBody CreateOrderRequest request) {
-        try {
-            RazorpayOrderResponse orderId = razorpayService.RazorpayOrderResponse(request.getPlan(), request.getEmail());
-            return ResponseEntity.ok(orderId);
-        } catch (RazorpayException e) {
-            return ResponseEntity.internalServerError().body("Error creating Razorpay order");
-        }
-    }
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody VerifyPaymentRequest request) {
@@ -42,7 +35,7 @@ public class PaymentController {
 
         if (isValid) {
             // Payment is successful, upgrade the user's plan
-            urlService.upgradeUserPlan(request.getEmail(), request.getPlan());
+            urlService.upgradeUserPlan(request.getEmail(), request.getPlan(),request.urlId,request.razorpayOrderId);
             return ResponseEntity.ok("Payment verified and plan upgraded successfully.");
         } else {
             return ResponseEntity.badRequest().body("Invalid payment signature.");
@@ -56,15 +49,12 @@ public class PaymentController {
         private UrlPlan plan;
     }
 
-    @Data
-    public static class CreateOrderResponse {
-        private final String orderId;
-    }
 
     @Data
     public static class VerifyPaymentRequest {
         private String email;
         private UrlPlan plan;
+        private UUID urlId;
         private String razorpayOrderId;
         private String razorpayPaymentId;
         private String razorpaySignature;

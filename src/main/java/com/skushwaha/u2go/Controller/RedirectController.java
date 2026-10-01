@@ -24,6 +24,9 @@ public class RedirectController {
             @PathVariable String shortCode
     ) {
 
+
+        System.out.println("ewrfwerf"+shortCode);
+
         String originalUrl =
                 urlService.getOriginalUrlAndIncrementClick(shortCode);
 

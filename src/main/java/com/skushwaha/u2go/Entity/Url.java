@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -95,6 +97,14 @@ public class Url {
     @Builder.Default
     private UrlPlan plan = UrlPlan.FREE;
 
+    @OneToMany(
+            mappedBy = "url",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL
+    )
+    @Builder.Default
+    private List<Payment> payments = new ArrayList<>();
+
 
     /**
      * Number of clicks.
@@ -137,6 +147,8 @@ public class Url {
             nullable = false
     )
     private Instant updatedAt;
+
+
 
 
     /**

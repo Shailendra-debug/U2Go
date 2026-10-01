@@ -40,7 +40,7 @@ public class PaymentService {
         // Create Razorpay order using your existing service
         RazorpayOrderResponse razorpayOrder =
                 razorpayService.RazorpayOrderResponse(
-                        url.getPlan(),userEmail
+                        url.getPlan(),userEmail,urlId
                 );
 
         Payment payment = Payment.builder()

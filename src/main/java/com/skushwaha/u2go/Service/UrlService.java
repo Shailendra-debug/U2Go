@@ -3,9 +3,8 @@ package com.skushwaha.u2go.Service;
 import com.razorpay.RazorpayException;
 import com.skushwaha.u2go.DTO.*;
 import com.skushwaha.u2go.Email.EmailService;
-import com.skushwaha.u2go.Entity.PlanPricing;
-import com.skushwaha.u2go.Entity.Url;
-import com.skushwaha.u2go.Entity.UrlPlan;
+import com.skushwaha.u2go.Entity.*;
+import com.skushwaha.u2go.Repository.PaymentRepository;
 import com.skushwaha.u2go.Repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -26,7 +27,9 @@ public class UrlService {
     private final UrlRepository urlRepository;
     private final EmailService emailService;
     private final PaymentService paymentService;
-    private final String BASE_URL="http://localhost:8080/";
+    private final PaymentRepository paymentRepository;
+    private final String BASE_URL="https://coderfan.online/";
+    private final String FRENT_EDURL="http://127.0.0.1:5500/";
 
     /**
      * Create a new short URL.
@@ -51,6 +54,7 @@ public class UrlService {
                 .expiresAt(calculateExpiry(plan))
                 .build();
 
+        url.setActive(plan == UrlPlan.FREE);
         Url savedUrl = urlRepository.save(url);
 
         if (plan != UrlPlan.FREE) {
@@ -154,6 +158,7 @@ public class UrlService {
 
         return urlRepository.findByUserEmail(email)
                 .stream()
+                //.filter(e->e.getPayments().stream().filter(f->f.getStatus()== PaymentStatus.SUCCESS).toList()).toList();
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -196,19 +201,24 @@ public class UrlService {
         return code.toString();
     }
 
-    @Transactional
+    //@Transactional
     public String getOriginalUrlAndIncrementClick(String shortCode) {
 
         Url url = urlRepository.findByShortCode(shortCode)
                 .orElseThrow(() ->
                         new RuntimeException("Short URL not found")
                 );
-
-        if (!url.isAvailable()) {
-            throw new RuntimeException(
-                    "Short URL is inactive or expired"
-            );
+        System.out.println("ewrfwerf");
+        if (!url.getActive()){
+            System.out.println("ewrfwerf");
+            return FRENT_EDURL+"link-inactive.html";
         }
+
+
+            if (url.getExpiresAt() != null &&
+                    Instant.now().isAfter(url.getExpiresAt())) {
+                return FRENT_EDURL+"link-expired.html";
+            }
 
         url.incrementClickCount();
 
@@ -217,19 +227,32 @@ public class UrlService {
 
     // Add this to UrlService.java
     @Transactional
-    public void upgradeUserPlan(String email, UrlPlan newPlan) {
+    public void upgradeUserPlan(String email, UrlPlan newPlan, UUID urlId,String oderId) {
         log.info("Upgrading plan for user: {} to {}", maskEmail(email), newPlan);
 
         // In a real app, you might have a User entity.
         // Here, we will update all existing URLs for this email.
-        List<Url> userUrls = urlRepository.findByUserEmail(email);
+        Url userUrls = urlRepository.getReferenceById(urlId);
 
-        for (Url url : userUrls) {
-            url.setPlan(newPlan);
-            url.setExpiresAt(calculateExpiry(newPlan));
+        switch (userUrls.getPlan()) {
+            case MONTHLY ->
+                    userUrls.setExpiresAt(Instant.now().plus(1, ChronoUnit.MONTHS));
+
+            case QUARTERLY ->
+                    userUrls.setExpiresAt(Instant.now().plus(3, ChronoUnit.MONTHS));
+
+            case HALF_YEARLY ->
+                    userUrls.setExpiresAt(Instant.now().plus(6, ChronoUnit.MONTHS));
+
+            case YEARLY ->
+                    userUrls.setExpiresAt(Instant.now().plus(12, ChronoUnit.MONTHS));
+
+            case FREE ->
+                    userUrls.setExpiresAt(null);
         }
-
-        urlRepository.saveAll(userUrls);
+        Optional<Payment> payment= paymentRepository.findByRazorpayPaymentId(oderId);
+        payment.get().setStatus(PaymentStatus.SUCCESS);
+        userUrls.setActive(true);
     }
 
     private Instant calculateExpiry(UrlPlan plan) {
