@@ -25,6 +25,9 @@ public record CreateUrlRequest(
         String customAlias,
 
         @NotNull(message = "Plan is required")
-        UrlPlan urlPlan
+        UrlPlan urlPlan,
+
+        @NotNull(message = "Plan is required")
+        Boolean isQr
 ) {
 }

@@ -25,6 +25,8 @@ public record UrlResponse(
 
         Boolean active,
 
+        Boolean isQr,
+
         Instant createdAt,
 
         Instant updatedAt,

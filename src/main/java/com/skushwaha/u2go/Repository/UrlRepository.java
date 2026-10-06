@@ -34,6 +34,10 @@ public interface UrlRepository extends JpaRepository<Url, UUID> {
      */
     List<Url> findByUserEmail(String userEmail);
 
+
+    List<Url> findByIsQrTrueAndUserEmail(String userEmail);
+
+    List<Url> findByIsQrFalseAndUserEmail(String userEmail);
     /**
      * Get only active URLs created by a user.
      */

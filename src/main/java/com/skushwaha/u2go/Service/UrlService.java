@@ -51,14 +51,16 @@ public class UrlService {
                 .customAlias(request.customAlias())
                 .userEmail(request.userEmail())
                 .plan(plan)
+                //.expiresAt(Instant.now().plus(5,ChronoUnit.MONTHS))
                 .expiresAt(calculateExpiry(plan))
                 .build();
 
         url.setActive(plan == UrlPlan.FREE);
+        url.setIsQr(request.isQr());
         Url savedUrl = urlRepository.save(url);
 
         if (plan != UrlPlan.FREE) {
-            return paymentService.createPayment(savedUrl.getId(),request.userEmail());
+            return paymentService.createPayment(savedUrl.getId(),request.urlPlan());
         }
 
         return new FreeUrlResponse(
@@ -71,6 +73,7 @@ public class UrlService {
                 url.getPlan(),
                 url.getClickCount(),
                 url.getActive(),
+                url.getIsQr(),
                 url.getCreatedAt(),
                 url.getUpdatedAt(),
                 url.getExpiresAt()
@@ -156,7 +159,17 @@ public class UrlService {
     @Transactional(readOnly = true)
     public List<UrlResponse> getUrlsByUserEmail(String email) {
 
-        return urlRepository.findByUserEmail(email)
+        return urlRepository.findByIsQrFalseAndUserEmail(email)
+                .stream()
+                //.filter(e->e.getPayments().stream().filter(f->f.getStatus()== PaymentStatus.SUCCESS).toList()).toList();
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UrlResponse> getQrByUserEmail(String email) {
+
+        return urlRepository.findByIsQrTrueAndUserEmail(email)
                 .stream()
                 //.filter(e->e.getPayments().stream().filter(f->f.getStatus()== PaymentStatus.SUCCESS).toList()).toList();
                 .map(this::mapToResponse)
@@ -201,7 +214,7 @@ public class UrlService {
         return code.toString();
     }
 
-    //@Transactional
+    @Transactional
     public String getOriginalUrlAndIncrementClick(String shortCode) {
 
         Url url = urlRepository.findByShortCode(shortCode)
@@ -211,19 +224,28 @@ public class UrlService {
         System.out.println("ewrfwerf");
         if (!url.getActive()){
             System.out.println("ewrfwerf");
-            return FRENT_EDURL+"link-inactive.html";
+            return FRENT_EDURL+"link-inactive.html/"+url.getShortCode();
         }
 
 
             if (url.getExpiresAt() != null &&
                     Instant.now().isAfter(url.getExpiresAt())) {
-                return FRENT_EDURL+"link-expired.html";
+                return FRENT_EDURL+"link-expired.html/"+url.getShortCode();
             }
 
         url.incrementClickCount();
 
         return url.getOriginalUrl();
     }
+
+    public UrlResponseCreat updatePlane(String code,UrlPlan plan) throws RazorpayException {
+
+        Optional<Url> url=urlRepository.findByShortCode(code);
+
+        return paymentService.createPayment(url.get().getId(),plan);
+
+    }
+
 
     // Add this to UrlService.java
     @Transactional
@@ -236,23 +258,51 @@ public class UrlService {
 
         switch (userUrls.getPlan()) {
             case MONTHLY ->
+            {
+                if (!userUrls.getActive()&&userUrls.getExpiresAt() != null &&
+                        Instant.now().isAfter(userUrls.getExpiresAt())) {
                     userUrls.setExpiresAt(Instant.now().plus(1, ChronoUnit.MONTHS));
+                }else {
+                    assert userUrls.getExpiresAt() != null;
+                    userUrls.setExpiresAt(userUrls.getExpiresAt().plus(1, ChronoUnit.MONTHS));
+                }
+            }
 
             case QUARTERLY ->
+            {
+                if (!userUrls.getActive()&&userUrls.getExpiresAt() != null &&
+                        Instant.now().isAfter(userUrls.getExpiresAt())) {
                     userUrls.setExpiresAt(Instant.now().plus(3, ChronoUnit.MONTHS));
-
+                }else {
+                    assert userUrls.getExpiresAt() != null;
+                    userUrls.setExpiresAt(userUrls.getExpiresAt().plus(3, ChronoUnit.MONTHS));
+                }
+            }
             case HALF_YEARLY ->
+            {
+                if (!userUrls.getActive()&&userUrls.getExpiresAt() != null &&
+                        Instant.now().isAfter(userUrls.getExpiresAt())) {
                     userUrls.setExpiresAt(Instant.now().plus(6, ChronoUnit.MONTHS));
-
+                }else {
+                    assert userUrls.getExpiresAt() != null;
+                    userUrls.setExpiresAt(userUrls.getExpiresAt().plus(6, ChronoUnit.MONTHS));
+                }
+            }
             case YEARLY ->
+            {
+                if (!userUrls.getActive()&&userUrls.getExpiresAt() != null &&
+                        Instant.now().isAfter(userUrls.getExpiresAt())) {
                     userUrls.setExpiresAt(Instant.now().plus(12, ChronoUnit.MONTHS));
-
-            case FREE ->
-                    userUrls.setExpiresAt(null);
+                }else {
+                    assert userUrls.getExpiresAt() != null;
+                    userUrls.setExpiresAt(userUrls.getExpiresAt().plus(12, ChronoUnit.MONTHS));
+                }
+            }
         }
         Optional<Payment> payment= paymentRepository.findByRazorpayPaymentId(oderId);
         payment.get().setStatus(PaymentStatus.SUCCESS);
         userUrls.setActive(true);
+        urlRepository.save(userUrls);
     }
 
     private Instant calculateExpiry(UrlPlan plan) {
@@ -262,6 +312,7 @@ public class UrlService {
         int months = PlanPricing.getDurationInMonths(plan);
         return Instant.now().plus(months * 30L, ChronoUnit.DAYS); // Approximate months to days
     }
+
 
     /**
      * Convert Entity → Response DTO.
@@ -281,6 +332,7 @@ public class UrlService {
                 url.getPlan(),
                 url.getClickCount(),
                 url.getActive(),
+                url.getIsQr(),
                 url.getCreatedAt(),
                 url.getUpdatedAt(),
                 url.getExpiresAt()

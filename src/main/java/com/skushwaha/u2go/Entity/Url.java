@@ -60,7 +60,6 @@ public class Url {
     )
     private String shortCode;
 
-
     /**
      * Optional custom alias.
      *
@@ -126,6 +125,12 @@ public class Url {
     )
     @Builder.Default
     private Boolean active = true;
+
+    @Column(
+            name = "isQr",
+            nullable = false
+    )
+    private Boolean isQr=false;
 
 
     /**

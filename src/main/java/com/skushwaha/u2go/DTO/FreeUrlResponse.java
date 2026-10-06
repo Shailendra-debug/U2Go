@@ -24,6 +24,8 @@ public record FreeUrlResponse(
 
         Boolean active,
 
+        Boolean isQr,
+
         Instant createdAt,
 
         Instant updatedAt,

@@ -1,7 +1,6 @@
 package com.skushwaha.u2go.Controller;
 
 import com.razorpay.RazorpayException;
-import com.skushwaha.u2go.DTO.RazorpayOrderResponse;
 import com.skushwaha.u2go.Entity.AppId;
 import com.skushwaha.u2go.Entity.UrlPlan;
 import com.skushwaha.u2go.Service.RazorpayService;
@@ -42,7 +41,19 @@ public class PaymentController {
         }
     }
 
+    @PostMapping("/update/plan")
+    public ResponseEntity<?>updatePlane(@RequestBody UpdatePlaneRequest request) throws RazorpayException {
+        return ResponseEntity.ok(urlService.updatePlane(request.shortCode,request.plan));
+    }
+
     // --- DTOs ---
+
+    @Data
+    public static class  UpdatePlaneRequest{
+        private String shortCode;
+        private UrlPlan plan;
+    }
+
     @Data
     public static class CreateOrderRequest {
         private String email;

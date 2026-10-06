@@ -24,14 +24,14 @@ public class PaymentService {
 
     public PaymentOrderResponse createPayment(
             UUID urlId,
-            String userEmail
+            UrlPlan plan
     ) throws RazorpayException {
 
         Url url = urlRepository.findById(urlId)
                 .orElseThrow(() ->
                         new EntityNotFoundException("URL not found"));
 
-        if (url.getPlan() == UrlPlan.FREE) {
+        if (plan == UrlPlan.FREE) {
             throw new IllegalStateException(
                     "Payment is not required for FREE plan"
             );
@@ -40,16 +40,16 @@ public class PaymentService {
         // Create Razorpay order using your existing service
         RazorpayOrderResponse razorpayOrder =
                 razorpayService.RazorpayOrderResponse(
-                        url.getPlan(),userEmail,urlId
+                        plan,url.getUserEmail(),urlId
                 );
 
         Payment payment = Payment.builder()
                 .razorpayOrderId(razorpayOrder.orderId())
-                .userEmail(userEmail)
+                .userEmail(url.getUserEmail())
                 .amount(razorpayOrder.amount())
                 .status(PaymentStatus.CREATED)
                 .appId(AppId.U2GO)
-                .plan(url.getPlan())
+                .plan(plan)
                 .url(url)
                 .build();
 
@@ -62,5 +62,6 @@ public class PaymentService {
                 razorpayOrder.keyId()
         );
     }
+
 
 }

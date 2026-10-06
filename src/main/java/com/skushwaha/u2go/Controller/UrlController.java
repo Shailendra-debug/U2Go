@@ -4,7 +4,6 @@ import com.razorpay.RazorpayException;
 import com.skushwaha.u2go.DTO.CreateUrlRequest;
 import com.skushwaha.u2go.DTO.UrlResponse;
 import com.skushwaha.u2go.Service.UrlService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +60,16 @@ public class UrlController {
 
         List<UrlResponse> urls =
                 urlService.getUrlsByUserEmail(email);
+
+        return ResponseEntity.ok(urls);
+    }
+    @GetMapping("/qr/users/{email}")
+    public ResponseEntity<List<UrlResponse>> getUserQrs(
+            @PathVariable String email
+    ) {
+
+        List<UrlResponse> urls =
+                urlService.getQrByUserEmail(email);
 
         return ResponseEntity.ok(urls);
     }
