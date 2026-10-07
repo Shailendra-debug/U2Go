@@ -221,7 +221,7 @@ public class UrlService {
                 .orElseThrow(() ->
                         new RuntimeException("Short URL not found")
                 );
-        System.out.println("ewrfwerf");
+        //System.out.println("ewrfwerf");
         if (!url.getActive()){
             System.out.println("ewrfwerf");
             return FRENT_EDURL+"link-inactive.html/"+url.getShortCode();
@@ -230,7 +230,7 @@ public class UrlService {
 
             if (url.getExpiresAt() != null &&
                     Instant.now().isAfter(url.getExpiresAt())) {
-                return FRENT_EDURL+"link-expired.html/"+url.getShortCode();
+                return FRENT_EDURL+"link-expired.html?id="+url.getId();
             }
 
         url.incrementClickCount();
