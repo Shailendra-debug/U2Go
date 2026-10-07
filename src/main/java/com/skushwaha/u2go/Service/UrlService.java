@@ -224,13 +224,13 @@ public class UrlService {
         //System.out.println("ewrfwerf");
         if (!url.getActive()){
             System.out.println("ewrfwerf");
-            return FRENT_EDURL+"link-inactive.html?id="+url.getId();
+            return FRENT_EDURL+"link-inactive.html?id="+url.getShortCode();
         }
 
 
             if (url.getExpiresAt() != null &&
                     Instant.now().isAfter(url.getExpiresAt())) {
-                return FRENT_EDURL+"link-expired.html?id="+url.getId();
+                return FRENT_EDURL+"link-expired.html?id="+url.getShortCode();
             }
 
         url.incrementClickCount();
