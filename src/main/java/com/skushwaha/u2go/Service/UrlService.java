@@ -224,7 +224,7 @@ public class UrlService {
         //System.out.println("ewrfwerf");
         if (!url.getActive()){
             System.out.println("ewrfwerf");
-            return FRENT_EDURL+"link-inactive.html/"+url.getShortCode();
+            return FRENT_EDURL+"link-inactive.html?id="+url.getId();
         }
 
 
