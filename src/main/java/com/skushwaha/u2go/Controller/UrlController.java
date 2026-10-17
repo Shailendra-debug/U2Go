@@ -23,6 +23,15 @@ public class UrlController {
      *
      * POST /api/urls
      */
+
+    @GetMapping("/health")
+    public Map<String, Object> health() {
+        return Map.of(
+            "status", "UP",
+            "message", "PutForm API is running"
+        );
+    }
+    
     @PostMapping
         public ResponseEntity<?> createUrl(@RequestBody CreateUrlRequest request) throws RazorpayException {
         return ResponseEntity
