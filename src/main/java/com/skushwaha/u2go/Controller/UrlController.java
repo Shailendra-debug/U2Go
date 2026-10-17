@@ -25,11 +25,8 @@ public class UrlController {
      */
 
     @GetMapping("/health")
-    public Map<String, Object> health() {
-        return Map.of(
-            "status", "UP",
-            "message", "PutForm API is running"
-        );
+    public String health() {
+        return "U2Go API is running";
     }
     
     @PostMapping
